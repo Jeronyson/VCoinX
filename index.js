@@ -686,7 +686,10 @@ function updateLink() {
                 startBooster();
 
             } catch (error) {
-                console.error('API Error:', error);
+                if (error.code && error.code == 5)
+                    ccon('Указан неправильный токен пользователя! Перепроверьте токен или получите новый, как указано здесь -> github.com/Jeronyson/VCoinX', true, true, false);
+                else
+                    console.error('API Error:', error);
                 process.exit();
             }
         })(VK_TOKEN);
