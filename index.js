@@ -149,9 +149,6 @@ vCoinWS.onReceiveDataEvent(async (place, score) => {
             }
         }
 
-        if (advertDisp == 0x1)
-            process.exit();
-
         if (smartBuy && vCoinWS.tick <= limitCPS && score > 0) {
             var prices = justPrices();
             prices[0] *= 1000;
