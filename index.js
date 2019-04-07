@@ -613,20 +613,30 @@ for (var argn = 2; argn < process.argv.length; argn++) {
                 autoBuy = false;
                 break;
             }
+        case '-setlimit':
+            {
+                if (dTest.length >= 1 && dTest.length < 7) {
+                    limitCPS = parseInt(dTest);
+                    con("Установлен лимит коинов / тик, до которого будет рабоать авто-закупка и умная покупка: " + limitCPS + " cps");
+                    argn++;
+                }
+                break;
+            }
         case '-h':
         case '-help':
             {
                 ccon("-- VCoinB arguments --", "red");
-                ccon("-help			- помощь.");
-                ccon("-flog			- подробные логи.");
-                ccon("-tforce		- принудительно использовать токен.");
-                ccon("-tsum [sum]	- включить функцию для авто-перевода.");
-                ccon("-to [id]		- указать ID для авто-перевода.");
-                ccon("-ti [seconds]	- установить инетрвал для автоматического перевода.");
-                ccon("-u [URL]		- задать ссылку.");
-                ccon("-t [TOKEN]	- задать токен.");
-                ccon("-black      - отключить цвета консоли.");
-                ccon("-noupdates  - отключить сообщение об обновлениях.");
+                ccon("-help			  - помощь.");
+                ccon("-flog			  - подробные логи.");
+                ccon("-tforce		  - принудительно использовать токен.");
+                ccon("-tsum [sum]	  - включить функцию для авто-перевода.");
+                ccon("-to [id]		  - указать ID для авто-перевода.");
+                ccon("-ti [seconds]	  - установить инетрвал для автоматического перевода.");
+                ccon("-u [URL]		  - задать ссылку.");
+                ccon("-t [TOKEN]	  - задать токен.");
+                ccon("-setlimit [cps] - ограничить cps для автозакупки и умной покупки");
+                ccon("-black          - отключить цвета консоли.");
+                ccon("-noupdates      - отключить сообщение об обновлениях.");
                 process.exit();
                 continue;
             }
