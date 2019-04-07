@@ -109,16 +109,6 @@ class VCoinWS {
                         this.oldScore = score;
                         this.oldPlace = place;
 
-                        this.onUserLoadedCallback && this.onUserLoadedCallback(place, score, items, top, firstTime, tick);
-                        this.onMyDataCallback && this.onMyDataCallback(place, score);
-
-                        this.tick = parseInt(tick, 10);
-                        this.tickTtl = setInterval(_ => {
-                            this.onTickEvent();
-                        }, 1e3);
-
-                        this.ccp = ccp || this.ccp;
-
                         if (pow)
                             try {
                                 let x = safeEval(pow, {
@@ -139,6 +129,17 @@ class VCoinWS {
                             } catch (e) {
                                 console.error(e);
                             }
+
+                        this.onUserLoadedCallback && this.onUserLoadedCallback(place, score, items, top, firstTime, tick);
+                        this.onMyDataCallback && this.onMyDataCallback(place, score);
+
+                        this.tick = parseInt(tick, 10);
+                        this.tickTtl = setInterval(_ => {
+                            this.onTickEvent();
+                        }, 1e3);
+
+                        this.ccp = ccp || this.ccp;
+
                     }
                 } else if (-1 === t.indexOf("SELF_DATA") &&
                     -1 === t.indexOf("WAIT_FOR_LOAD") &&
