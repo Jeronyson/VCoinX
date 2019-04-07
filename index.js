@@ -103,7 +103,7 @@ vCoinWS.onReceiveDataEvent(async (place, score) => {
 
     if (place > 0 && !rl.isQst) {
 
-      con("Позиция в топе: " + place + "\tКоличество коинов: " + formatScore(score, true), "yellow");
+      con("Топ: " + place + "\tКоины: " + formatScore(score, true), "yellow");
 
         if (transferPercent) {
             transferCoins = Math.floor(score / 1000 * (transferPercent / 100))
@@ -125,7 +125,7 @@ vCoinWS.onReceiveDataEvent(async (place, score) => {
                     await infLog(template);
                 } catch (e) {}
             } catch (e) {
-                con("Автоматический перевод не удалася. Ошибка: " + e.message, true);
+                con("Автоматический перевод не удался. Ошибка: " + e.message, true);
             }
         }
 
@@ -378,7 +378,7 @@ rl.on('line', async (line) => {
             temp = lPrices(true);
             ccon("-- Доступные ускорения и их цены --", "red");
             ccon(temp);
-            item = await rl.questionAsync("Введи название ускорения [cursor, cpu, cpu_stack, computer, server_vk, quantum_pc, datacenter]: ");
+            item = await rl.questionAsync("Введите название ускорения [cursor, cpu, cpu_stack, computer, server_vk, quantum_pc, datacenter]: ");
             var array = item.split(" ");
             for (var i = 0, j = array.length; i < j; i++) {
                 if (!array[i]) return;
@@ -398,7 +398,7 @@ rl.on('line', async (line) => {
             break;
 
         case 'autobuyitem':
-            item = await rl.questionAsync("Введи название ускорения для автоматической покупки [cursor, cpu, cpu_stack, computer, server_vk, quantum_pc, datacenter]: ");
+            item = await rl.questionAsync("Введите название ускорения для автоматической покупки [cursor, cpu, cpu_stack, computer, server_vk, quantum_pc, datacenter]: ");
             var array = item.split(" ");
             for (var i = 0; i < array.length; i++) {
                 if (!item || !Entit.titles[array[i]]) return;
@@ -482,7 +482,7 @@ rl.on('line', async (line) => {
             try {
                 await vCoinWS.transferToUser(id, count);
                 con("Перевод был выполнен успешно.", "black", "Green");
-                let template = "Произведена отпрвка [" + formatScore(count * 1e3, true) + "] коинов от vk.com/id" + USER_ID.toString() + " для vk.com/id" + id.toString();
+                let template = "Произведена отправка [" + formatScore(count * 1e3, true) + "] коинов от vk.com/id" + USER_ID.toString() + " для vk.com/id" + id.toString();
                 try {
                     await infLog(template);
                 } catch (e) {}
