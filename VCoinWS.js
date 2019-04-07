@@ -120,6 +120,7 @@ class VCoinWS {
                     -1 === t.indexOf("MISS") &&
                     -1 === t.indexOf("TR") &&
                     -1 === t.indexOf("BROKEN") &&
+                    -1 === t.indexOf("ALREADY_CONNECTED") &&
                     "C" !== t[0] && "R" !== t[0])
                     console.log("on Message:\n", t);
                 if ("R" === t[0]) {
