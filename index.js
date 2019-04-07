@@ -585,6 +585,15 @@ for (var argn = 2; argn < process.argv.length; argn++) {
                 }
                 break;
             }
+        case '-tperc':
+            {
+                if (dTest.length >= 1 && dTest.length < 4) {
+                    transferPercent = parseInt(dTest);
+                    con("Установлено количество коинов для автоматического перевода: " + transferPercent + "% коинов.");
+                    argn++;
+                }
+                break;
+            }
         case '-ti':
             {
                 if (dTest.length >= 1 && dTest.length < 10) {
@@ -630,6 +639,7 @@ for (var argn = 2; argn < process.argv.length; argn++) {
                 ccon("-flog			  - подробные логи.");
                 ccon("-tforce		  - принудительно использовать токен.");
                 ccon("-tsum [sum]	  - включить функцию для авто-перевода.");
+                ccon("-tperc [perc]	  - включить функцию для авто-перевода процента от коинов.");
                 ccon("-to [id]		  - указать ID для авто-перевода.");
                 ccon("-ti [seconds]	  - установить инетрвал для автоматического перевода.");
                 ccon("-u [URL]		  - задать ссылку.");
