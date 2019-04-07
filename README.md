@@ -101,6 +101,7 @@ VCoinX - модификация для [VCoin](https://github.com/xTCry/VCoin), 
 # Автор(ы) бота
 * [xTCry](https://github.com/xTCry) - разработчик оригинального VCoin.
 * [cursedseal](https://github.com/cursedseal) - разработчик модификации VCoinX.
+* [Jeronyson](https://github.com/Jeronyson) - разработчик данного форка VCoinX.
 
 ## Поддержать разработчиков
 [![Донат разработчику оригинальной версии](https://img.shields.io/badge/Донат-VCoin-orange.svg)](https://qiwi.me/xtcry)

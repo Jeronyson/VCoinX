@@ -17,20 +17,20 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/cursedseal/VCoinX.git"
+        "url": "git+https://github.com/Jeronyson/VCoinX.git"
     },
     "keywords": [
-    "vk",
-    "coin",
-    "x",
-    "vcoinx",
-    "vkcoin",
-    "bot"
-  ],
-    "author": "cursedseal",
+        "vk",
+        "coin",
+        "x",
+        "vcoinx",
+        "vkcoin",
+        "bot"
+    ],
+    "author": "Jeronyson",
     "license": "ISC",
     "bugs": {
-        "url": "https://github.com/cursedseal/VCoinX/issues"
+        "url": "https://github.com/Jeronyson/VCoinX/issues"
     },
-    "homepage": "https://github.com/cursedseal/VCoinX#readme"
+    "homepage": "https://github.com/Jeronyson/VCoinX#readme"
 }

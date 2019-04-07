@@ -6,7 +6,7 @@ const fs = require('fs'),
 const pJson = require('./package.json');
 
 let GitCUpdate = new GithubContent({
-    owner: 'cursedseal',
+    owner: 'Jeronyson',
     repo: 'vcoinx',
     branch: 'master'
 });
@@ -109,7 +109,7 @@ function checkUpdates() {
             if (c[0] === "{") {
                 let data = JSON.parse(c);
 
-                let msg = (data.version > pJson.version) ? "Было выпущено новое обновление! -> github.com/cursedseal/VCoinX \t[" + (data.version + "/" + pJson.version) + "]" :
+                let msg = (data.version > pJson.version) ? "Было выпущено новое обновление! -> github.com/Jeronyson/VCoinX \t[" + (data.version + "/" + pJson.version) + "]" :
                     false;
 
                 if (msg) {

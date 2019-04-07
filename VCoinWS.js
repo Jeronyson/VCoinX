@@ -109,8 +109,8 @@ class VCoinWS {
                         this.oldScore = score;
                         this.oldPlace = place;
 
-                        this.onMyDataCallback && this.onMyDataCallback(place, score);
                         this.onUserLoadedCallback && this.onUserLoadedCallback(place, score, items, top, firstTime, tick);
+                        this.onMyDataCallback && this.onMyDataCallback(place, score);
 
                         this.tick = parseInt(tick, 10);
                         this.tickTtl = setInterval(_ => {
@@ -124,7 +124,7 @@ class VCoinWS {
                                 let x = safeEval(pow, {
                                         window: {
                                             location: {
-                                                host: 'vk.ru'
+                                                host: 'vk.com'
                                             },
                                             navigator: {
                                                 userAgent: 'Mozilla/5.0 (Windows; U; Win98; en-US; rv:0.9.2) Gecko/20010725 Netscape6/6.1'

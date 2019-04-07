@@ -98,13 +98,14 @@ vConinWS.onMissClickEvent(_ => {
 });
 
 vConinWS.onReceiveDataEvent(async (place, score) => {
-    var n = arguments.length > 2 && void 0 !== arguments[2] && arguments[2],
-        trsum = 3e6;
 
     miner.setScore(score);
     setTerminalTitle("VCoinX " + getVersion() + " (id" + USER_ID.toString() + ") > " + formatScore(vConinWS.tick, true) + " cps > " + "top " + place + " > " + formatScore(score, true) + " coins.");
 
     if (place > 0 && !rl.isQst) {
+
+      con("Позиция в топе: " + place + "\tКоличество коинов: " + formatScore(score, true), "yellow");
+
         if (transferPercent) {
             transferScore = Math.floor(score / 1000 * (transferPercent / 100))
         }
@@ -205,8 +206,6 @@ vConinWS.onReceiveDataEvent(async (place, score) => {
             con(updatesEv + "\n\t\t\t Введите \'hideupd(ate)\' для скрытия уведомления.", "white", "Red");
             updatesLastTime = Math.floor(Date.now() / 1000);
         }
-
-        con("Позиция в топе: " + place + "\tКоличество коинов: " + formatScore(score, true), "yellow");
     }
 });
 
@@ -226,9 +225,11 @@ vConinWS.onUserLoaded((place, score, items, top, firstTime, tick) => {
 
     setTerminalTitle("VCoinX " + getVersion() + " (id" + USER_ID.toString() + ") > " + formatScore(tick, true) + " cps > " + "top " + place + " > " + formatScore(score, true) + " coins.");
 
+    miner.setScore(score);
     miner.setActive(items);
     miner.updateStack(items);
 
+    lastTry = 0;
     boosterTTL && clearInterval(boosterTTL);
     boosterTTL = setInterval(_ => {
         rand(0, 5) > 3 && vConinWS.click();
@@ -629,7 +630,7 @@ for (var argn = 2; argn < process.argv.length; argn++) {
 function updateLink() {
     if (!DONEURL || tforce) {
         if (!VK_TOKEN) {
-            con("Отсутствует токен. Информация о его получении расположена на -> github.com/cursedseal/VCoinX", true);
+            con("Отсутствует токен. Информация о его получении расположена на -> github.com/Jeronyson/VCoinX", true);
             return process.exit();
         }
 
