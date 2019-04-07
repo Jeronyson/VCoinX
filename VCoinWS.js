@@ -54,6 +54,7 @@ class VCoinWS {
             };
             this.ws.onerror = e => {
                 console.error(e.message);
+                this.retryTime = 1e3;
                 this.reconnect(wsServer);
             }
             this.ws.onclose = _ => {
