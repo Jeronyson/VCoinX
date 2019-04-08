@@ -24,13 +24,18 @@ class VCoinWS {
         this.onConnectSend = [];
         this.tickCount = 0;
         this.wsServer = "";
+        this.group_id = null;
+        this.groupInfo = [];
+        this.groupData = [];
     }
-    run(wsServer, cb) {
+    run(wsServer, group_id, cb) {
         this.wsServer = wsServer || this.wsServer;
         this.selfClose();
         if (cb)
             this.onOnlineCallback = cb;
         try {
+            if (group_id)
+                this.group_id = group_id;
             this.ws = new WebSocket(this.wsServer);
             this.ws.onopen = _ => {
                 this.connected = true;
@@ -51,6 +56,11 @@ class VCoinWS {
                     }
                 };
                 this.onOpen();
+                if (this.group_id) {
+                    let str = "P1 G " + this.group_id;
+                    if (this.connected) this.ws.send(str);
+                    else this.onConnectSend.push(str);
+                }
             };
             this.ws.onerror = e => {
                 console.error(e.message);
@@ -87,6 +97,8 @@ class VCoinWS {
                         this.confirmScore = score;
                         this.oldScore = score;
                         this.oldPlace = place;
+                        this.groupInfo = data.top.groupInfo;
+
                         if (pow)
                             try {
                                 let x = safeEval(pow, {
@@ -105,7 +117,6 @@ class VCoinWS {
                             } catch (e) {
                                 console.error(e);
                             }
-
                         this.onUserLoadedCallback && this.onUserLoadedCallback(place, score, items, top, firstTime, tick);
                         this.onMyDataCallback && this.onMyDataCallback(place, score);
                         this.tick = parseInt(tick, 10);
@@ -127,6 +138,11 @@ class VCoinWS {
                     let p = t.replace("R", "").split(" "),
                         d = p.shift();
                     this.rejectAndDropCallback(d, new Error(p.join(" ")))
+                }
+                if ("C" === t[0] && "1" === t[1] && "{" === t[3]) {
+                    let data = JSON.parse(t.slice(3));
+                    this.groupData = data;
+                    this.onGroupLoadedCallback && this.onGroupLoadedCallback(this.groupInfo, this.groupData);
                 }
                 if ("C" === t[0]) {
                     let h = t.replace("C", "").split(" "),
@@ -226,6 +242,9 @@ class VCoinWS {
     }
     onUserLoaded(e) {
         this.onUserLoadedCallback = e
+    }
+    onGroupLoaded(e) {
+        this.onGroupLoadedCallback = e
     }
     onReceiveDataEvent(e) {
         this.onMyDataCallback = e

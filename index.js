@@ -183,6 +183,13 @@ vCoinWS.onUserLoaded((place, score, items, top, firstTime, tick) => {
         rand(0, 5) > 3 && vCoinWS.click();
     }, 5e2);
 });
+vCoinWS.onGroupLoaded((groupInfo, groupData) => {
+    if (groupData.name && groupInfo.place && groupInfo.score) {
+        con("Загружена информация о группе " + groupData.name);
+        con("Топ группы: " + groupInfo.place);
+        con("Коины группы: " + formatScore(groupInfo.score, true) + " коинов.");
+    }
+});
 vCoinWS.onBrokenEvent(_ => {
     con("Обнаружен brokenEvent, видимо сервер сломался.\n\t\tЧерез 10 секунд будет выполнен перезапуск.", true);
     setTerminalTitle("VCoinX " + getVersion() + " (id" + USER_ID.toString() + ") > " + "BROKEN");
@@ -226,7 +233,7 @@ async function startBooster(tw) {
     tryStartTTL = setTimeout(() => {
         con("VCoinX загружается...");
         vCoinWS.userId = USER_ID;
-        vCoinWS.run(URLWS, _ => {
+        vCoinWS.run(URLWS, GROUP_ID, _ => {
             con("VCoinX загружен...");
             xRestart = true;
         });
@@ -780,8 +787,8 @@ function updateLink() {
                     })).items[0].mobile_iframe_url;
                 } else {
                     response = (await vk.api.call('execute.resolveScreenName', {
-                        screen_name: 'app6915965_' + GROUP_ID,
-                        owner_id: GROUP_ID,
+                        screen_name: 'app6915965_-' + GROUP_ID,
+                        owner_id: '-' + GROUP_ID,
                         func_v: 9
                     })).response.embedded_uri;
                     iframe_url = response.view_url;
