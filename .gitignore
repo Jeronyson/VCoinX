@@ -4,6 +4,8 @@ node_modules/
 config.js
 log.txt
 .htpasswd
+tokens
+links
 
 !*.keep
 !**/*.keep

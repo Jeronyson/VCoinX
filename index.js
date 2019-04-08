@@ -1,5 +1,5 @@
 const url = require('url'),
-    open = require('open'),
+    fs = require('fs'),
     {
         VK
     } = require('vk-io');
@@ -29,7 +29,9 @@ const {
 let {
     USER_ID: depUSER_ID,
     DONEURL,
-    VK_TOKEN
+    VK_TOKEN,
+    USERNAME,
+    PASSWORD
 } = existsFile('./config.js') ? require('./config.js') : {};
 let USER_ID = false;
 let vk = new VK();
@@ -58,7 +60,10 @@ let boosterTTL = null,
     transferLastTime = 0,
     lastTry = 0,
     numberOfTries = 3,
-    currentServer = 0;
+    currentServer = 0,
+    backupTokens = true,
+    backupLinks = true,
+    authAppType = "android";
 var tempDataUpdate = {
     "canSkip": false,
     "itemPrice": null,
@@ -453,6 +458,35 @@ for (var argn = 2; argn < process.argv.length; argn++) {
                 setColorsM(offColors = !offColors);
                 break;
             }
+        case '-u':
+        case '-user':
+        case '-username':
+            {
+                if (dTest.length > 0) {
+                    USERNAME = dTest.toString();
+                    argn++;
+                }
+                break;
+            }
+        case '-p':
+        case '-pass':
+        case '-password':
+            {
+                if (dTest.length > 0) {
+                    PASSWORD = dTest.toString();
+                    argn++;
+                }
+                break;
+            }
+        case '-a':
+        case '-app':
+            {
+                if (dTest.length > 0) {
+                    authAppType = dTest.toString();
+                    argn++;
+                }
+                break;
+            }
         case '-t':
             {
                 if (dTest.length > 80 && dTest.length < 90) {
@@ -462,7 +496,7 @@ for (var argn = 2; argn < process.argv.length; argn++) {
                 }
                 break;
             }
-        case '-u':
+        case '-url':
             {
                 if (dTest.length > 200 && dTest.length < 512) {
                     DONEURL = dTest;
@@ -564,12 +598,15 @@ for (var argn = 2; argn < process.argv.length; argn++) {
                 ccon("-- VCoinB arguments --", "red");
                 ccon("-help			  - помощь.");
                 ccon("-flog			  - подробные логи.");
+                ccon("-u [username]   - указать логин пользователя для автоматической авторизации.");
+                ccon("-p [password]	  - указать пароль пользователя для автоматической авторизации.");
+                ccon("-app [app]	  - указать вид приложения для автоматической авторизации (android, iphone, ipad, windows_phone, windows).");
                 ccon("-tforce		  - принудительно использовать токен.");
                 ccon("-tsum [sum]	  - включить функцию для авто-перевода.");
                 ccon("-tperc [perc]	  - включить функцию для авто-перевода процента от коинов.");
                 ccon("-to [id]		  - указать ID для авто-перевода.");
                 ccon("-ti [seconds]	  - установить инетрвал для автоматического перевода.");
-                ccon("-u [URL]		  - задать ссылку.");
+                ccon("-url [URL]	  - задать ссылку.");
                 ccon("-t [TOKEN]	  - задать токен.");
                 ccon("-setlimit [cps] - ограничить cps для автозакупки и умной покупки");
                 ccon("-black          - отключить цвета консоли.");
@@ -643,11 +680,87 @@ async function smartBuyFunction(score) {
 
 function updateLink() {
     if (!DONEURL || tforce) {
-        if (!VK_TOKEN) {
-            con("Отсутствует токен. Информация о его получении расположена на -> github.com/Jeronyson/VCoinX", true);
-            return process.exit();
+        if (!VK_TOKEN && !USERNAME && !PASSWORD) {
+                con("Отсутствует токен. Информация о его получении расположена на -> github.com/Jeronyson/VCoinX", true);
+                return process.exit();
         }
         (async function inVKProc(token) {
+            if (!token && USERNAME && PASSWORD && backupTokens) {
+                if (fs.existsSync('tokens/' + USERNAME + ".txt")){
+                    let backupedToken = fs.readFileSync('tokens/' + USERNAME + ".txt");
+                    tokenData = JSON.parse(backupedToken);
+                    if (tokenData.token)
+                        token = tokenData.token;
+                }
+            }
+            if (!token && USERNAME && PASSWORD) {
+                const { auth } = vk;
+                vk.setOptions({
+                       login: USERNAME,
+                       password: PASSWORD
+                });
+
+                let direct;
+                switch (authAppType) {
+                    case "android":
+                    default:
+                        direct = auth.androidApp();
+                        break;
+                    case "iphone":
+                        direct = auth.iphoneApp();
+                        break;
+                    case "ipad":
+                        direct = auth.ipadApp();
+                        break;
+                    case "windows_phone":
+                        direct = auth.windowsPhoneApp();
+                        break;
+                    case "windows":
+                        direct = auth.windowsApp();
+                        break;
+                }
+
+                try {
+                    response = await direct.run();
+                } catch (e) {
+                    switch (e.code) {
+                        case 'PAGE_BLOCKED':
+                            ccon("Страница пользователя заблокирована!", true, true, false);
+                            break;
+                        case 'AUTHORIZATION_FAILED':
+                            ccon("Указаны неправильный логин и/или пароль", true, true, false);
+                            break;
+                        case 'FAILED_PASSED_CAPTCHA':
+                        case 'FAILED_PASSED_TWO_FACTOR':
+                        case 'MISSING_TWO_FACTOR_HANDLER':
+                        case 'MISSING_CAPTCHA_HANDLER':
+                            ccon("Требуется ввести капчу или код двухфакторной авторизации, но VCoinX этого пока не умеет :(", true, true, false);
+                            break;
+                        default:
+                            console.error(e);
+                            break;
+                    }
+                    process.exit();
+                }
+                if (!response.token) {
+                    ccon("Не удалось получить токен пользователя с помощью логина и пароля! Попробуйте указать токен вручную", true, true, false);
+                    process.exit();
+                }
+                token = response.token;
+                if (backupTokens) {
+                    let backupJson = {
+                        'id': response.user,
+                        'token': token
+                    };
+                    if (!fs.existsSync('tokens')){
+                        fs.mkdirSync('tokens');
+                    }
+                    fs.writeFile('tokens/' + USERNAME + '.txt', JSON.stringify(backupJson), (err) => {
+                        if (err) throw err;
+                        ccon('Токен пользователя успешно сохранен!');
+                    });
+                }
+            }
             vk.token = token;
             try {
                 let {
@@ -661,6 +774,20 @@ function updateLink() {
                 if (!id)
                     throw ("Не удалось получить ID пользователя.");
                 USER_ID = id;
+                if (backupLinks) {
+                    let backupJson = {
+                        'id': id,
+                        'token': token,
+                        'link': mobile_iframe_url
+                    };
+                    if (!fs.existsSync('links')){
+                        fs.mkdirSync('links');
+                    }
+                    fs.writeFile('links/id' + id + '.txt', JSON.stringify(backupJson), (err) => {
+                        if (err) throw err;
+                        ccon('Ссылка на iframe успешно сохранена!');
+                    });
+                }
                 formatWSS(mobile_iframe_url);
                 startBooster();
             } catch (error) {
