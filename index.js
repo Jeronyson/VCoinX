@@ -31,7 +31,8 @@ let {
     DONEURL,
     VK_TOKEN,
     USERNAME,
-    PASSWORD
+    PASSWORD,
+    GROUP_ID
 } = existsFile('./config.js') ? require('./config.js') : {};
 let USER_ID = false;
 let vk = new VK();
@@ -487,6 +488,16 @@ for (var argn = 2; argn < process.argv.length; argn++) {
                 }
                 break;
             }
+        case '-g':
+        case '-gid':
+        case '-group':
+            {
+                if (dTest.length > 0) {
+                    GROUP_ID = dTest.toString();
+                    argn++;
+                }
+                break;
+            }
         case '-t':
             {
                 if (dTest.length > 80 && dTest.length < 90) {
@@ -763,12 +774,21 @@ function updateLink() {
             }
             vk.token = token;
             try {
-                let {
-                    mobile_iframe_url
-                } = (await vk.api.apps.get({
-                    app_id: 6915965
-                })).items[0];
-                if (!mobile_iframe_url)
+                if (!GROUP_ID) {
+                    iframe_url = (await vk.api.apps.get({
+                        app_id: 6915965
+                    })).items[0].mobile_iframe_url;
+                } else {
+                    response = (await vk.api.call('execute.resolveScreenName', {
+                        screen_name: 'app6915965_' + GROUP_ID,
+                        owner_id: GROUP_ID,
+                        func_v: 9
+                    })).response.embedded_uri;
+                    iframe_url = response.view_url;
+                    if (response.original_url == 'https://vk.com/coin')
+                        throw ("Указан некорректный ID группы или группа не подключила майнинг VKCoin!");
+                }
+                if (!iframe_url)
                     throw ("Не удалось получить ссылку на приложение.\n\t\tВозможное решение: Используйте расширенный токен.");
                 let id = (await vk.api.users.get())[0]["id"];
                 if (!id)
@@ -778,7 +798,7 @@ function updateLink() {
                     let backupJson = {
                         'id': id,
                         'token': token,
-                        'link': mobile_iframe_url
+                        'link': iframe_url
                     };
                     if (!fs.existsSync('links')){
                         fs.mkdirSync('links');
@@ -788,13 +808,15 @@ function updateLink() {
                         ccon('Ссылка на iframe успешно сохранена!');
                     });
                 }
-                formatWSS(mobile_iframe_url);
+                formatWSS(iframe_url);
                 startBooster();
             } catch (error) {
                 if (error.code && error.code == 5)
                     ccon('Указан некорректный токен пользователя! Перепроверьте токен или получите новый, как указано в данном руководстве -> github.com/Jeronyson/VCoinX', true, true, false);
                 else if (error.code && (error.code == 'ECONNREFUSED' || error.code == 'ENOENT'))
                     ccon('Не удалось подключиться API! Попробуйте перезагрузить роутер или установить VPN.', true, true, false);
+                else if (error.code && error.code == 3)
+                    ccon('Указанный токен не подходит для майнинга на группу. Укажите расширенный токен или используйте автоматическое получение токена по логину и паролю, как указано в данном руководстве -> github.com/Jeronyson/VCoinX', true, true, false);
                 else
                     console.error('API Error:', error);
                 process.exit();

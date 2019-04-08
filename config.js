@@ -2,5 +2,6 @@ module.exports = {
     VK_TOKEN: "",
     DONEURL: "",
     USERNAME: "",
-    PASSWORD: ""
+    PASSWORD: "",
+    GROUP_ID: ""
 };
