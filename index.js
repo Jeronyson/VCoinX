@@ -873,8 +873,9 @@ function updateLink() {
                         owner_id: '-' + GROUP_ID,
                         func_v: 9
                     })).response.embedded_uri;
-                    iframe_url = response.view_url;
-                    if (response.original_url == 'https://vk.com/coin')
+                    if (response.view_url)
+                        iframe_url = response.view_url;
+                    if (response.original_url && response.original_url == 'https://vk.com/coin')
                         throw ("Указан некорректный ID группы или группа не подключила майнинг VKCoin!");
                 }
                 if (!iframe_url)
