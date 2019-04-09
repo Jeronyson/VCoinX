@@ -450,7 +450,7 @@ class Miner {
         return count;
     }
     updateStack(items) {
-        this.stack = Entit.generateStack(items.filter(e => ("bonus" !== e && "vkp1" !== e && "vkp2" !== e)));
+        this.stack = Entit.generateStack(items.filter(e => ("bonus" !== e && "vkp1" !== e && "vkp2" !== e && "music" !== e)));
         let total = 0;
         this.stack.forEach(function(e) {
             let n = e.value,
@@ -507,7 +507,11 @@ class EntitiesClass {
             vkp2: {
                 price: 0,
                 amount: 1e4
-            }
+            },
+            music: {
+                price: 0,
+                amount: 4e3
+            },
         };
         this.names = [
 			"cursor",
@@ -519,6 +523,7 @@ class EntitiesClass {
 			"datacenter",
 			// "vkp1",
 			// "vkp2",
+            // "music"
 		];
     }
     generateStack(e) {

@@ -139,7 +139,6 @@ function notifyToRestart() {
 }
 setInterval(notifyToRestart, 5 * 60 * 1000);
 
-
 let vCoinWS = new VCoinWS();
 let missCount = 0,
     missTTL = null;
