@@ -56,11 +56,8 @@ class VCoinWS {
                     }
                 };
                 this.onOpen();
-                if (this.group_id) {
-                    let str = "P1 G " + this.group_id;
-                    if (this.connected) this.ws.send(str);
-                    else this.onConnectSend.push(str);
-                }
+                if (this.group_id)
+                    this.loadGroup(this.group_id);
             };
             this.ws.onerror = e => {
                 console.error(e.message);
@@ -138,11 +135,6 @@ class VCoinWS {
                     let p = t.replace("R", "").split(" "),
                         d = p.shift();
                     this.rejectAndDropCallback(d, new Error(p.join(" ")))
-                }
-                if ("C" === t[0] && "1" === t[1] && "{" === t[3]) {
-                    let data = JSON.parse(t.slice(3));
-                    this.groupData = data;
-                    this.onGroupLoadedCallback && this.onGroupLoadedCallback(this.groupInfo, this.groupData);
                 }
                 if ("C" === t[0]) {
                     let h = t.replace("C", "").split(" "),
@@ -373,6 +365,11 @@ class VCoinWS {
             this.onMyDataCallback(this.oldPlace, this.oldScore);
         }, 1);
         return res;
+    }
+    async loadGroup(e) {
+        let res = await this.sendPackMethod(["G", e]);
+        this.groupData = JSON.parse(res);
+        this.onGroupLoadedCallback && this.onGroupLoadedCallback(this.groupInfo, this.groupData);
     }
     async getMyPlace() {
         let res = await this.sendPackMethod(["X"]);
