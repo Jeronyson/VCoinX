@@ -1,4 +1,5 @@
 const url = require('url'),
+    AutoUpdater = require('auto-updater'),
     fs = require('fs'),
     {
         VK
@@ -39,10 +40,6 @@ let vk = new VK();
 let URLWS = false;
 let boosterTTL = null,
     tryStartTTL = null,
-    disableUpdates = false,
-    updatesEv = false,
-    updatesInterval = 60,
-    updatesLastTime = 0,
     xRestart = true,
     flog = false,
     offColors = false,
@@ -64,7 +61,12 @@ let boosterTTL = null,
     currentServer = 0,
     backupTokens = true,
     backupLinks = true,
-    authAppType = "android";
+    authAppType = "android",
+    checkUpdates = true,
+    updatesInterval = 60,
+    autoUpdate = true,
+    updateOnce = false,
+    needRestart = false;
 var tempDataUpdate = {
     "canSkip": false,
     "itemPrice": null,
@@ -74,11 +76,70 @@ var tempDataUpdate = {
     "tmpPr": null,
     "onBrokenEvent": true,
 };
-onUpdates(msg => {
-    if (!updatesEv && !disableUpdates)
-        updatesEv = msg;
-    con(msg, "white", "Red");
+var autoupdater = new AutoUpdater({
+    checkgit: true
 });
+    autoupdater.on('git-clone', function() {
+      con("Автоматическое обновление не работает, т.к. вы клонировали репозиторий! Для автоматического обновления удалите папку .git", "white", "Red");
+    });
+    autoupdater.on('check.up-to-date', function(v) {
+        con("У вас установлена актуальная версия: " + v, "white", "Green");
+    });
+    autoupdater.on('check.out-dated', function(v_old, v) {
+        con("У вас устаревшая версия: " + v_old, "white", "Red");
+        if (!autoUpdate && !updateOnce) {
+            con("Актуальная версия: " + v + ". Для ее установки введите команду update", "white", "Red");
+        } else {
+            con("Актуальная версия: " + v + ". Приступаю к обновлению...", "white", "Green");
+            autoupdater.fire('download-update');
+        }
+    });
+    autoupdater.on('update.downloaded', function() {
+      con("Обновление успешно загружено! Начинаю установку...", "white", "Green");
+      autoupdater.fire('extract');
+    });
+    autoupdater.on('update.not-installed', function() {
+      con("Обновление уже загружено! Начинаю установку...", "white", "Green");
+      autoupdater.fire('extract');
+    });
+    autoupdater.on('update.extracted', function() {
+        con("Обновление успешно установлено!", "white", "Green");
+        needRestart = true;
+        let depDiff = autoupdater.fire('diff-dependencies');
+        con("Для применения обновления ТРЕБУЕТСЯ ПЕРЕЗАПУСК БОТА!", "white", "Green");
+        if (depDiff.count > 0)
+            con("У обновленной версии изменились зависимости, поэтому не забудьте перед запуском бота произвести установку пакетов с помощью 1_install.bat или 1_install.sh", "white", "Red");
+    });
+    autoupdater.on('download.start', function(name) {
+        con("Начинаю загрузку " + name, "white", "Green");
+    });
+    autoupdater.on('download.end', function(name) {
+        con("Завершена загрузка " + name, "white", "Green");
+    });
+    autoupdater.on('download.error', function(err) {
+        con("Возникла ошибка при загрузке: " + err, "white", "Red");
+    });
+    autoupdater.on('end', function(name, e) {
+        if (checkUpdates) {
+            setTimeout(function() { autoupdater.fire('check'); }, updatesInterval * 60 * 1000);
+        }
+        updateOnce = false;
+    });
+    autoupdater.on('error', function(name, e) {
+        console.error(name, e);
+        if (checkUpdates) {
+            setTimeout(function() { autoupdater.fire('check'); }, updatesInterval * 60 * 1000);
+        }
+    });
+if (checkUpdates)
+    autoupdater.fire('check');
+function notifyToRestart() {
+    if (needRestart)
+        con("Для применения обновления ТРЕБУЕТСЯ ПЕРЕЗАПУСК БОТА!", "white", "Green");
+}
+setInterval(notifyToRestart, 5 * 60 * 1000);
+
+
 let vCoinWS = new VCoinWS();
 let missCount = 0,
     missTTL = null;
@@ -152,10 +213,6 @@ vCoinWS.onReceiveDataEvent(async (place, score) => {
         }
         if (smartBuy && vCoinWS.tick <= limitCPS && score > 0)
             smartBuyFunction(score);
-        if (!disableUpdates && updatesEv && (Math.floor(Date.now() / 1000) - updatesLastTime > updatesInterval)) {
-            con(updatesEv + "\n\t\t\t Введите \'hideupd(ate)\' для скрытия данного уведомления.", "white", "Red");
-            updatesLastTime = Math.floor(Date.now() / 1000);
-        }
     }
 });
 vCoinWS.onTransfer(async (id, score) => {
@@ -292,12 +349,6 @@ rl.on('line', async (line) => {
             setColorsM(offColors = !offColors);
             con("Цвета " + (offColors ? "от" : "в") + "ключены. (*^.^*)", "blue");
             break;
-        case "hu":
-        case "hideupd":
-        case "hideupdate":
-            con("Уведомления об обновлении " + (!disableUpdates ? "скрыт" : "показан") + "ы. (*^.^*)");
-            disableUpdates = !disableUpdates;
-            break;
         case "stop":
         case "pause":
             xRestart = false;
@@ -433,6 +484,24 @@ rl.on('line', async (line) => {
                     tempDataUpdate["canSkip"] = false;
                 }
             break;
+        case 'u':
+        case 'upd':
+        case 'update':
+            updateOnce = true;
+            autoupdater.fire('check');
+            break;
+        case 'au':
+        case 'autoupd':
+        case 'autoupdate':
+            autoUpdate = !autoUpdate;
+            con("Автоматическое обновление " + autoUpdate ? "включено" : "отключено" + ".");
+            break;
+        case 'cu':
+        case 'checkupd':
+        case 'checkupdates':
+            checkUpdates = !checkUpdates;
+            con("Проверка обновлений " + checkUpdates ? "включена" : "отключена" + ".");
+            break;
         case "?":
         case "help":
             ccon("-- VCoinX --", "red");
@@ -443,7 +512,9 @@ rl.on('line', async (line) => {
             ccon("(b)uy	- покупка улучшений.");
             ccon("(p)rice - отображение цен на товары.");
             ccon("tran(sfer)	- перевод игроку.");
-            ccon("hideupd(ate) - скрыть уведомление об обновлении.");
+            ccon("(u)pdate - установить обновление, если автообновление отключено.");
+            ccon("checkupd(ates) - включить/отключить автоматическую проверку обновлений.");
+            ccon("(au)toupdate - включить/отключить автоматическую установку обновлений.");
             ccon("to - указать ID и включить авто-перевод средств на него.");
             ccon("ti - указать интервал для авто-перевода (в секундах).");
             ccon("tsum - указать сумму для авто-перевода (без запятой).");
@@ -609,6 +680,15 @@ for (var argn = 2; argn < process.argv.length; argn++) {
             {
                 autobeep = true;
                 break;
+            }
+        case '-noupdates':
+            {
+                checkUpdates = false;
+                autoUpdate = false;
+            }
+        case '-noautoupdates':
+            {
+                autoUpdate = false;
             }
         case '-h':
         case '-help':

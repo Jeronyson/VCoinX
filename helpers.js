@@ -1,19 +1,10 @@
 const fs = require('fs'),
     colors = require('colors/safe'),
-    ReadLine = require('readline'),
-    GithubContent = require('github-content');
+    ReadLine = require('readline');
 
 const pJson = require('./package.json');
 
-let GitCUpdate = new GithubContent({
-    owner: 'Jeronyson',
-    repo: 'vcoinx',
-    branch: 'master'
-});
-
-let checkUpdateTTL = null,
-    onUpdatesCB = false,
-    offColors = false;
+let offColors = false;
 
 function formatScore(e) {
     return (arguments.length > 1 && void 0 !== arguments[1] && arguments[1]) ?
@@ -101,29 +92,6 @@ rl.questionAsync = (question) => {
     });
 };
 
-function checkUpdates() {
-    GitCUpdate.files(['package.json'], (err, results) => {
-        if (err) return;
-        results.forEach(file => {
-            let c = file.contents.toString();
-            if (c[0] === "{") {
-                let data = JSON.parse(c);
-
-                let msg = (data.version > pJson.version) ? "Было выпущено новое обновление! -> github.com/Jeronyson/VCoinX \t[" + (data.version + "/" + pJson.version) + "]" :
-                    false;
-
-                if (msg) {
-                    if (onUpdatesCB) onUpdatesCB(msg);
-                    else con(msg, "white", "Red");
-                }
-            }
-        });
-    });
-}
-
-checkUpdateTTL = setInterval(checkUpdates, 1e7);
-checkUpdates();
-
 function rand(min, max) {
     if (max === undefined)
         max = min;
@@ -188,9 +156,6 @@ module.exports = {
     setColorsM,
     offColors,
     formatScore,
-    checkUpdates,
-    checkUpdateTTL,
-    onUpdates: cb => (onUpdatesCB = cb, true),
     existsFile,
     existsAsync,
     writeFileAsync,
