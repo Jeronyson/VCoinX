@@ -328,7 +328,6 @@ rl.on('line', async (line) => {
         case 'debuginfo':
         case 'debug':
             console.log("updatesInterval", updatesInterval);
-            console.log("updatesLastTime", updatesLastTime);
             console.log("xRestart", xRestart);
             console.log("autobuy", autoBuy);
             console.log("smartbuy", smartBuy);
