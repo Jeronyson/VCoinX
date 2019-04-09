@@ -685,10 +685,12 @@ for (var argn = 2; argn < process.argv.length; argn++) {
             {
                 checkUpdates = false;
                 autoUpdate = false;
+                break;
             }
         case '-noautoupdates':
             {
                 autoUpdate = false;
+                break;
             }
         case '-h':
         case '-help':
