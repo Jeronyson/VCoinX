@@ -9,6 +9,7 @@ const {
     miner,
     Entit
 } = require('./VCoinWS');
+const open = require('open');
 const {
     con,
     ccon,
@@ -66,7 +67,9 @@ let boosterTTL = null,
     updatesInterval = 60,
     autoUpdate = true,
     updateOnce = false,
-    needRestart = false;
+    needRestart = false,
+    tried2FA = false,
+    triedCaptcha = false;
 var tempDataUpdate = {
     "canSkip": false,
     "itemPrice": null,
@@ -777,6 +780,42 @@ async function smartBuyFunction(score) {
     tempDataUpdate["onBrokenEvent"] = false;
 }
 
+vk.captchaHandler = async ({ src }, retry) => {
+    if (!triedCaptcha)
+        console.log('Для авторизации потребуется ввести код с картинки, которая откроется в вашем браузере.');
+    try {
+        open(src);
+    } catch (e) {
+        console.error('Ошибка при открытии капчи: ' + e);
+    }
+    if (triedCaptcha) {
+        var consoleText = 'Введен неверный код! Попробуйте еще раз: ';
+    } else {
+        var consoleText = 'Введите код с картинки: ';
+        triedCaptcha = true;
+    }
+    await rl.question(consoleText, async (code) => {
+        try {
+    	     await retry(code);
+           } catch (e) {
+
+           }
+    });
+};
+
+vk.twoFactorHandler = async (payload, retry) => {
+    console.log('На аккаунте включена двухфакторная авторизация! Вам был отправлен код в приложение VK или в виде СМС.');
+    rl.question('Введите код: ', async (code) => {
+        tried2FA = true;
+        try {
+    	       await retry(code);
+           } catch (e) {
+
+           }
+    });
+};
+
+
 function updateLink() {
     if (!DONEURL || tforce) {
         if (!VK_TOKEN && !USERNAME && !PASSWORD) {
@@ -819,28 +858,29 @@ function updateLink() {
                         break;
                 }
 
-                try {
-                    response = await direct.run();
-                } catch (e) {
-                    switch (e.code) {
+                response = await direct.run().catch((error) => {
+                    switch (error.code) {
                         case 'PAGE_BLOCKED':
                             ccon("Страница пользователя заблокирована!", true, true, false);
                             break;
                         case 'AUTHORIZATION_FAILED':
-                            ccon("Указаны неправильный логин и/или пароль", true, true, false);
+                        case 'FAILED_PASSED_TWO_FACTOR':
+                            if (tried2FA) {
+                                ccon("Введен неправильный код двухфакторной авторизации!", true, true, false);
+                            } else {
+                                ccon("Указаны неправильный логин и/или пароль", true, true, false);
+                            }
                             break;
                         case 'FAILED_PASSED_CAPTCHA':
-                        case 'FAILED_PASSED_TWO_FACTOR':
-                        case 'MISSING_TWO_FACTOR_HANDLER':
-                        case 'MISSING_CAPTCHA_HANDLER':
-                            ccon("Требуется ввести капчу или код двухфакторной авторизации, но VCoinX этого пока не умеет :(", true, true, false);
+                            ccon("Введен неправильный код с картинки!", true, true, false);
                             break;
                         default:
-                            console.error(e);
+                            console.error('Ошибка авторизации: ' + e);
                             break;
                     }
                     process.exit();
-                }
+	            });
+
                 if (!response.token) {
                     ccon("Не удалось получить токен пользователя с помощью логина и пароля! Попробуйте указать токен вручную", true, true, false);
                     process.exit();
