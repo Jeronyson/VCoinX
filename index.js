@@ -61,7 +61,7 @@ let boosterTTL = null,
     currentServer = 0,
     backupTokens = true,
     backupLinks = true,
-    authAppType = "android",
+    authAppType = "iphone",
     checkUpdates = true,
     updatesInterval = 60,
     autoUpdate = true,
@@ -256,7 +256,7 @@ vCoinWS.onBrokenEvent(_ => {
     lastTry++;
     if (lastTry >= numberOfTries) {
         lastTry = 0;
-        currentServer = currentServer >= 3 ? 0 : currentServer + 1;
+        currentServer = currentServer >= 2 ? 0 : currentServer + 1;
         con("Достигнут лимит попыток подключиться к серверу.\n\t\t\tПроизводится смена сервера...", true);
         updateLink();
     }
@@ -278,7 +278,7 @@ vCoinWS.onOffline(_ => {
     lastTry++;
     if (lastTry >= numberOfTries) {
         lastTry = 0;
-        currentServer = currentServer >= 3 ? 0 : currentServer + 1;
+        currentServer = currentServer >= 2 ? 0 : currentServer + 1;
         con("Достигнут лимит попыток подключиться к серверу.\n\t\t\tПроизводится смена сервера...", true);
         updateLink();
     }
@@ -935,9 +935,6 @@ function formatWSS(LINK) {
             break;
         case 2:
             URLWS = URLWS.replace(/([\w-]+\.)*vkforms\.ru/, "coin.w5.vkforms.ru");
-            break;
-        case 3:
-            URLWS = URLWS.replace(/([\w-]+\.)*vkforms\.ru/, (CHANNEL > 7) ? "bagosi-go-go.vkforms.ru" : "coin.w5.vkforms.ru");
             break;
         default:
             URLWS = URLWS.replace(/([\w-]+\.)*vkforms\.ru/, "coin-without-bugs.vkforms.ru");
