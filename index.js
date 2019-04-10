@@ -904,7 +904,7 @@ function updateLink() {
             try {
                 if (!GROUP_ID) {
                     iframe_url = (await vk.api.apps.get({
-                        app_id: 6915965
+                        app_id: 6915965,
                     })).items[0].mobile_iframe_url;
                 } else {
                     response = (await vk.api.call('execute.resolveScreenName', {
@@ -968,7 +968,8 @@ function formatWSS(LINK) {
     let GSEARCH = url.parse(LINK),
         NADDRWS = GSEARCH.protocol.replace("https:", "wss:").replace("http:", "ws:") + "//" + GSEARCH.host + "/channel/",
         CHANNEL = USER_ID % 32;
-    URLWS = NADDRWS + CHANNEL + "/" + GSEARCH.search + "&ver=1&pass=".concat(Entit.hashPassCoin(USER_ID, 0));
+    URLWS = NADDRWS + CHANNEL + "/" + GSEARCH.search + "&ver=1&upd=1&pass=".concat(Entit.hashPassCoin(USER_ID, 0));
+    currentServer = 0;
     switch (currentServer) {
         case 1:
             URLWS = URLWS.replace(/([\w-]+\.)*vkforms\.ru/, "bagosi-go-go.vkforms.ru");
