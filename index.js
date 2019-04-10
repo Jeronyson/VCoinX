@@ -474,6 +474,21 @@ rl.on('line', async (line) => {
                 else con(e.message, true);
             }
             break;
+        case 'gs':
+        case 'getscore':
+        case 'getuserscore':
+          let userId = await rl.questionAsync('ID пользователя: ')
+          let userData = (await vk.api.users.get({
+            user_ids: userId,
+          }))[0]['id']
+          userId = userData
+          try {
+            let gscore = await vCoinWS.getUserScores([userId])
+            con('Текущий баланс пользователя @id' + userId.toString() + ': ' + formatScore(gscore[userId], true) + ' коинов.')
+          } catch (e) {
+            console.error('Ошибка при получении баланса:', e)
+          }
+          break;
         case 'psb':
         case 'pfsb':
         case 'percforsmartbuy':

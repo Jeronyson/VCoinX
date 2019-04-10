@@ -1,6 +1,6 @@
 {
     "name": "vcoinx",
-    "version": "11.04.2019",
+    "version": "11.04.2019-1",
     "description": "VCoin modification w/o comission and donate ask.",
     "main": "index.js",
     "dependencies": {

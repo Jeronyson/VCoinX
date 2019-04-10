@@ -87,6 +87,7 @@ class VCoinWS {
             this.ws.onmessage = ({
                 data
             }) => {
+                console.log(data);
                 let t = data;
                 if ("{" === t[0]) {
                     let data = JSON.parse(t);
@@ -371,6 +372,10 @@ class VCoinWS {
         let res = await this.sendPackMethod(["G", e]);
         this.groupData = JSON.parse(res);
         this.onGroupLoadedCallback && this.onGroupLoadedCallback(this.groupInfo, this.groupData);
+    }
+    async getUserScores (e) {
+        let res = await this.sendPackMethod(['GU'].concat(e))
+        return JSON.parse(res)
     }
     async getMyPlace() {
         let res = await this.sendPackMethod(["X"]);
