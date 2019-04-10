@@ -263,14 +263,15 @@ vCoinWS.onBrokenEvent(_ => {
     forceRestart(1e4, true);
 });
 vCoinWS.onAlreadyConnected(_ => {
-    con("Обнаружено открытие приложения с другого устройства.\n\t\tЧерез 30 секунд будет выполнен перезапуск.", true);
+    con("Обнаружено открытие приложения с другого устройства.\n\t\tЧерез 60 секунд будет выполнен перезапуск.", true);
     setTerminalTitle("VCoinX " + getVersion() + " (id" + USER_ID.toString() + ") > " + "ALREADY_CONNECTED");
     if (autobeep)
         beep();
-    forceRestart(3e4, true);
+    forceRestart(6e4, true);
 });
 vCoinWS.onOffline(_ => {
     if (!xRestart) return;
+    if (tryStartTTL) return;
     con("Пользователь отключен от сервера.\n\t\tЧерез 10 секунд будет выполнен перезапуск.", true);
     if (autobeep)
         beep();
@@ -282,7 +283,7 @@ vCoinWS.onOffline(_ => {
         updateLink();
     }
     setTerminalTitle("VCoinX " + getVersion() + " (id" + USER_ID.toString() + ") > " + "OFFLINE");
-    forceRestart(2e4, true);
+    forceRestart(1e4, true);
 });
 async function startBooster(tw) {
     tryStartTTL && clearTimeout(tryStartTTL);

@@ -8,7 +8,7 @@ const jsdomConfig = {
     host: 'coin-without-bugs.vkforms.ru',
 };
 const window = new Window(jsdomConfig);
-window.parseInt = function (e) { return parseInt(e) };
+window.parseInt = parseInt;
 window.Math = Math;
 class VCoinWS {
     constructor() {
@@ -70,9 +70,9 @@ class VCoinWS {
                     this.loadGroup(this.group_id);
             };
             this.ws.onerror = e => {
-                console.error(e.message);
+                console.error("Возникла ошибка websocket: " + e.message);
                 this.retryTime = 1e3;
-                this.reconnect(wsServer);
+                this.reconnect(wsServer, true);
             }
             this.ws.onclose = _ => {
                 this.connected = false;
@@ -196,8 +196,8 @@ class VCoinWS {
             }
             this.connecting = true;
         } catch (e) {
-            console.error(e);
-            this.reconnect(wsServer);
+            console.error("Возникла ошибка websocket: " + e.message);
+            this.reconnect(wsServer, true);
         }
     }
     onOpen() {
