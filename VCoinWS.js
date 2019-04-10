@@ -37,6 +37,7 @@ class VCoinWS {
         this.group_id = null;
         this.groupInfo = [];
         this.groupData = [];
+        this.digits = [];
     }
     run(wsServer, group_id, cb) {
         this.wsServer = wsServer || this.wsServer;
@@ -87,7 +88,6 @@ class VCoinWS {
             this.ws.onmessage = ({
                 data
             }) => {
-                console.log(data);
                 let t = data;
                 if ("{" === t[0]) {
                     let data = JSON.parse(t);
@@ -106,6 +106,7 @@ class VCoinWS {
                         this.oldScore = score;
                         this.oldPlace = place;
                         this.groupInfo = data.top.groupInfo;
+                        this.digits = data.digits;
 
                         if (pow)
                             try {
@@ -116,7 +117,7 @@ class VCoinWS {
                             } catch (e) {
                                 console.error(e);
                             }
-                        this.onUserLoadedCallback && this.onUserLoadedCallback(place, score, items, top, firstTime, tick);
+                        this.onUserLoadedCallback && this.onUserLoadedCallback(place, score, items, top, firstTime, tick, this.digits);
                         this.onMyDataCallback && this.onMyDataCallback(place, score);
                         this.tick = parseInt(tick, 10);
                         this.tickTtl = setInterval(_ => {

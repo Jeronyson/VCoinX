@@ -226,9 +226,23 @@ vCoinWS.onTransfer(async (id, score) => {
         console.error(e);
     }
 });
-vCoinWS.onUserLoaded((place, score, items, top, firstTime, tick) => {
+vCoinWS.onUserLoaded((place, score, items, top, firstTime, tick, digits) => {
     con("Пользователь успешно загружен.");
     con("Скорость: " + formatScore(tick, true) + " коинов / тик.");
+
+    if (digits && digits.length > 0) {
+        digits.forEach(function(el) {
+            let trend = "0";
+            if (el.trend) {
+                if (el.trend > 0) {
+                    trend = "+" + formatScore(Math.abs(el.trend), true);
+                } else if (el.trend < 0) {
+                    trend = "-" + formatScore(Math.abs(el.trend), true);
+                }
+            }
+            con(el.description + ": " + formatScore(el.value, true) + " (" + trend  + ")");
+        });
+    }
 
     setTerminalTitle("VCoinX " + getVersion() + " (id" + USER_ID.toString() + ") > " + formatScore(tick, true) + " cps > " + "top " + place + " > " + formatScore(score, true) + " coins.");
 
