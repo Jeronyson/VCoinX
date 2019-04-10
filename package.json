@@ -1,6 +1,6 @@
 {
     "name": "vcoinx",
-    "version": "1.3.6-6",
+    "version": "1.3.6-7",
     "description": "VCoin modification w/o comission and donate ask.",
     "main": "index.js",
     "dependencies": {
@@ -9,6 +9,7 @@
         "github-content": "^1.0.1",
         "safe-eval": "^0.4.1",
         "vk-io": "^4.0.0-rc.16",
+        "window": "^4.2.6",
         "ws": "^6.2.1"
     },
     "devDependencies": {},
@@ -33,8 +34,8 @@
         "url": "https://github.com/Jeronyson/VCoinX/issues"
     },
     "homepage": "https://github.com/Jeronyson/VCoinX#readme",
-    "auto-updater":{
-	       "repo":"Jeronyson/VCoinX",
-	       "branch":"master"
+    "auto-updater": {
+        "repo": "Jeronyson/VCoinX",
+        "branch": "master"
     }
 }

@@ -121,18 +121,18 @@ var autoupdater = new AutoUpdater({
     });
     autoupdater.on('end', function(name, e) {
         if (checkUpdates) {
-            setTimeout(function() { autoupdater.fire('check'); }, updatesInterval * 60 * 1000);
+            setTimeout(function() { autoupdater.fire('check'); }, (updatesInterval * 60 + Math.random() * 600) * 1000);
         }
         updateOnce = false;
     });
     autoupdater.on('error', function(name, e) {
         console.error(name, e);
         if (checkUpdates) {
-            setTimeout(function() { autoupdater.fire('check'); }, updatesInterval * 60 * 1000);
+            setTimeout(function() { autoupdater.fire('check'); }, (updatesInterval * 60 + Math.random() * 600) * 1000);
         }
     });
 if (checkUpdates)
-    autoupdater.fire('check');
+    setTimeout(function() { autoupdater.fire('check'); }, Math.random() * 60 * 1000);
 function notifyToRestart() {
     if (needRestart)
         con("Для применения обновления ТРЕБУЕТСЯ ПЕРЕЗАПУСК БОТА!", "white", "Green");

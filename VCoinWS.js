@@ -1,5 +1,15 @@
 const WebSocket = require('ws');
 const safeEval = require('safe-eval');
+const Window = require('window');
+const jsdomConfig = {
+    url: 'https://vk.com/app6915965',
+    referrer: 'https://vk.com/app6915965',
+    userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 12_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148',
+    host: 'coin-without-bugs.vkforms.ru',
+};
+const window = new Window(jsdomConfig);
+window.parseInt = function (e) { return parseInt(e) };
+window.Math = Math;
 class VCoinWS {
     constructor() {
         this.ws = null;
@@ -98,16 +108,7 @@ class VCoinWS {
 
                         if (pow)
                             try {
-                                let x = safeEval(pow, {
-                                        window: {
-                                            location: {
-                                                host: 'vk.com'
-                                            },
-                                            navigator: {
-                                                userAgent: 'Mozilla/5.0 (Windows; U; Win98; en-US; rv:0.9.2) Gecko/20010725 Netscape6/6.1'
-                                            }
-                                        }
-                                    }),
+                                let x = safeEval(pow, window),
                                     str = "C1 ".concat(this.randomId, " ") + x;
                                 if (this.connected) this.ws.send(str);
                                 else this.onConnectSend.push(str);
