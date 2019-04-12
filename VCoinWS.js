@@ -38,6 +38,7 @@ class VCoinWS {
         this.groupInfo = [];
         this.groupData = [];
         this.digits = [];
+        this.tx = [];
     }
     run(wsServer, group_id, cb) {
         this.wsServer = wsServer || this.wsServer;
@@ -107,6 +108,7 @@ class VCoinWS {
                         this.oldPlace = place;
                         this.groupInfo = data.top.groupInfo;
                         this.digits = data.digits;
+                        this.tx = data.tx;
 
                         if (pow)
                             try {
@@ -117,14 +119,13 @@ class VCoinWS {
                             } catch (e) {
                                 console.error(e);
                             }
-                        this.onUserLoadedCallback && this.onUserLoadedCallback(place, score, items, top, firstTime, tick, this.digits);
+                        this.onUserLoadedCallback && this.onUserLoadedCallback(place, score, items, top, firstTime, tick, this.digits, this.tx);
                         this.onMyDataCallback && this.onMyDataCallback(place, score);
                         this.tick = parseInt(tick, 10);
                         this.tickTtl = setInterval(_ => {
                             this.onTickEvent();
                         }, 1e3);
                         this.ccp = ccp || this.ccp;
-
                     }
                 } else if (-1 === t.indexOf("SELF_DATA") &&
                     -1 === t.indexOf("WAIT_FOR_LOAD") &&
@@ -374,8 +375,16 @@ class VCoinWS {
         this.groupData = JSON.parse(res);
         this.onGroupLoadedCallback && this.onGroupLoadedCallback(this.groupInfo, this.groupData);
     }
+    async getTxData (e) {
+        let res = await this.sendPackMethod(['TX'].concat(e));
+        return JSON.parse(res)
+    }
+    async getTxList () {
+        let res = await this.sendPackMethod(['SX']);
+        return JSON.parse(res)
+    }
     async getUserScores (e) {
-        let res = await this.sendPackMethod(['GU'].concat(e))
+        let res = await this.sendPackMethod(['GS'].concat(e))
         return JSON.parse(res)
     }
     async getMyPlace() {
@@ -383,10 +392,6 @@ class VCoinWS {
         res = parseInt(res, 10);
         this.oldPlace = res;
         return res;
-    }
-    async getUserScores(e) {
-        let res = await this.sendPackMethod(["GU"].concat(e));
-        return JSON.parse(res);
     }
     sendPackMethod(e) {
         let t = this,

@@ -13,6 +13,7 @@ const open = require('open');
 const {
     con,
     ccon,
+    dateF,
     setColorsM,
     formatScore,
     rl,
@@ -69,7 +70,8 @@ let boosterTTL = null,
     updateOnce = false,
     needRestart = false,
     tried2FA = false,
-    triedCaptcha = false;
+    triedCaptcha = false,
+    tranPerPage = 20;
 var tempDataUpdate = {
     "canSkip": false,
     "itemPrice": null,
@@ -226,7 +228,7 @@ vCoinWS.onTransfer(async (id, score) => {
         console.error(e);
     }
 });
-vCoinWS.onUserLoaded((place, score, items, top, firstTime, tick, digits) => {
+vCoinWS.onUserLoaded((place, score, items, top, firstTime, tick, digits, tx) => {
     con("Пользователь успешно загружен.");
     con("Скорость: " + formatScore(tick, true) + " коинов / тик.");
 
@@ -243,6 +245,8 @@ vCoinWS.onUserLoaded((place, score, items, top, firstTime, tick, digits) => {
             con(el.description + ": " + formatScore(el.value, true) + " (" + trend  + ")");
         });
     }
+
+    con("История переводов: " + tx.length);
 
     setTerminalTitle("VCoinX " + getVersion() + " (id" + USER_ID.toString() + ") > " + formatScore(tick, true) + " cps > " + "top " + place + " > " + formatScore(score, true) + " coins.");
 
@@ -339,7 +343,8 @@ function justPrices(d) {
 rl.on('line', async (line) => {
     if (!URLWS) return;
     let temp, item;
-    switch (line.trim().toLowerCase()) {
+    let textLine = line.trim().toLowerCase().split(" ");
+    switch (textLine[0]) {
         case '':
             break;
         case 'debuginformation':
@@ -503,6 +508,11 @@ rl.on('line', async (line) => {
             console.error('Ошибка при получении баланса:', e)
           }
           break;
+         case 'tx':
+         case 'gettx':
+         case 'transfers':
+            printTxList(textLine[1]);
+            break;
         case 'psb':
         case 'pfsb':
         case 'percforsmartbuy':
@@ -558,6 +568,48 @@ rl.on('line', async (line) => {
             break;
     }
 });
+async function printTxList(page = 1) {
+    let tx = await vCoinWS.getTxList();
+    let txData = await vCoinWS.getTxData(tx);
+    page = parseInt(page);
+    if (page < 1) page = 1;
+    try {
+      if (txData.length > 0) {
+          ccon("История переводов: " + txData.length, "white");
+          let maxPage = Math.ceil(txData.length / tranPerPage);
+          if (page > maxPage) page = maxPage;
+          txData.reverse();
+          txData = txData.slice((page - 1) * tranPerPage, (page - 1) * tranPerPage + tranPerPage);
+          let idArray = txData.map(({ from_id }) => from_id);
+          idArray = idArray.concat(txData.map(({ to_id }) => to_id));
+          let cleanIdArray = [];
+          idArray.forEach(function (value, index, self) {
+            if (self.indexOf(value) === index) {
+                cleanIdArray.push(value);
+            }
+          });
+          let userInfo = (await vk.api.users.get({
+              user_ids: cleanIdArray
+          }));
+          txData.forEach(function (el) {
+              let template = dateF(el.created_at) + " -- ";
+              let userData = userInfo.find(x => x.id === (el.from_id == USER_ID ? el.to_id : el.from_id));
+              if (userData) {
+                  template += "[" + userData.first_name + " " + userData.last_name + "] ";
+              }
+              template += "@id" + (el.from_id == USER_ID ? el.to_id : el.from_id);
+              template += ", сумма: ";
+              let amount = ccon((el.from_id == USER_ID ? "-" : "+") + formatScore(el.amount, true), (el.from_id == USER_ID ? "red" : "green"), false, true);
+              console.log(ccon(template, "white", false, true) + amount);
+          });
+          ccon("Страница " + page + " из " + maxPage + " (для просмотра страницы введите tx " + page + ")", "white");
+      } else {
+          con('Переводов нет.');
+      }
+    } catch (e) {
+      console.error('Ошибка при получении истории транзакций:', e)
+    }
+}
 for (var argn = 2; argn < process.argv.length; argn++) {
     let cTest = process.argv[argn],
         dTest = process.argv[argn + 1];

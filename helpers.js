@@ -153,6 +153,7 @@ module.exports = {
     rl,
     con,
     ccon,
+    dateF,
     setColorsM,
     offColors,
     formatScore,
